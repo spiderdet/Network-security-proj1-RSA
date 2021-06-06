@@ -1,35 +1,4 @@
 import random
-import numpy as np
-import binascii
-def fastExpMod(b, e, m):
-    result = 1
-    while e != 0:
-        if (e&1) == 1:
-            # ei = 1, then mul
-            result = (result * b) % m
-        e >>= 1
-        # b, b^2, b^4, b^8, ... , b^(2^n)
-        b = (b*b) % m
-    return result
-
-def primeTest(n):
-    q = n - 1
-    k = 0
-    #Find k, q, satisfied 2^k * q = n - 1
-    while q % 2 == 0:
-        k += 1
-        q /= 2
-    a = random.randint(2, n-2)
-    q=int(q)
-    #If a^q mod n= 1, n maybe is a prime number
-    if fastExpMod(a, q, n) == 1:
-        return True
-    #If there exists j satisfy a ^ ((2 ^ j) * q) mod n == n-1, n maybe is a prime number
-    for j in range(0, k):
-        if fastExpMod(a, (2**j)*q, n) == n - 1:
-            return True
-    #a is not a prime number
-    return False
 
 def rabin_miller(num):
     s = num - 1
@@ -49,6 +18,10 @@ def rabin_miller(num):
                 else:
                     i = i + 1
                     v = (v ** 2) % num
+                    # if v == 1:   # 这两行可以删，因为v==1的情况最终会到if i == t-1这一分支上去
+                    #     return False # 但加上的更能说明这是二次探测定理，如果num是素数，则v^2=1(mod num)的解只能是1或num-1不会是其他值。
+                    # 因此在v!=1，!=num-1后，它能自救（证明大概率num是素数）的唯一方法是v^2=num-1(mod num)。换句话说这里用到二次探测定理的地方在于
+                    # 检测除1和num-1外其他值会不会平方后mod=1，如果一路上升的时候都不会，说明大概率num是素数。
     return True
 
 
@@ -80,6 +53,14 @@ def get_prime(key_size=1024):
             return num
 
 
+def calculate_bits(number):
+    len = 0
+    while number != 0:
+        number >>= 1
+        len += 1
+    return len
+
+
 def get_gcd(a, b):
     k = a // b
     remainder = a % b
@@ -91,16 +72,18 @@ def get_gcd(a, b):
     return b
 
 
-# 改进欧几里得算法求线性方程的x与y
-def get_(a, b):
+# 改进欧几里得算法求线性方程的x与y http://www.so-cools.com/?p=818
+def calculate_equation(a, b): # 计算 ax-by=1 的正整数解
     if b == 0:
         return 1, 0
     else:
         k = a // b
         remainder = a % b
-        x1, y1 = get_(b, remainder)
+        x1, y1 = calculate_equation(b, remainder)
         x, y = y1, x1 - k * y1
     return x, y
+
+
 def s2e(s):
     e = [0,0,0,0,0,0,0,0]
     for i in range(0,8,1):

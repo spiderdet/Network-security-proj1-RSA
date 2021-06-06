@@ -10,8 +10,6 @@ errors = 'surrogatepass'
 encoding = 'utf-8'
 
 
-
-
 def CharsToBinary(msg, errors=errors):
     bits = bin(int.from_bytes(msg.encode(encoding, errors), 'big'))[2:]
     return bits.zfill(8 * ((len(bits) + 7) // 8))
@@ -85,14 +83,14 @@ if __name__ == '__main__':
     e = 65537
     eular = (p - 1) * (q - 1)
     if Rsa.get_gcd(e, eular) == 1:
-        x, y = Rsa.get_(e, eular)
+        x, y = Rsa.calculate_equation(e, eular)
         d = x % eular
     print("\npublic key: ", e, ', ', n)
     print("\nprivate key: ", d, ", ", n)
     instr = input("\nmessage= ")
     instr = bytes(instr, encoding='utf-8')
     plaintxt = int(binascii.b2a_hex(instr), 16)
-    cipher = Rsa.fastExpMod(plaintxt, e, n)
+    cipher = pow(plaintxt, e, n)
     print("\nencripted= ", cipher)
     binmsg = CharsToBinary(str(cipher),errors)
 
@@ -102,7 +100,7 @@ if __name__ == '__main__':
 
     print("\nUNPADDED MSG:\n", result)
     cipher=int(result)
-    interpret = Rsa.fastExpMod(cipher, d, n)
+    interpret = pow(cipher, d, n)
     int_string = binascii.a2b_hex(hex(interpret)[2:])
 
     print("\ndecripted= ", str(int_string, encoding='utf-8'))
