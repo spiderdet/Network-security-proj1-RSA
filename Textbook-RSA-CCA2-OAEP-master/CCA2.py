@@ -1,7 +1,7 @@
 from Crypto.Cipher import AES
 import random
 from binascii import a2b_hex, b2a_hex
-import Rsa as rsa
+import Rsa
 
 ori_request = "You have succeeded!"
 e=65537
@@ -13,11 +13,11 @@ class WUP:
 
 class server:
     def __init__(self):
-        self.p=rsa.get_prime(512)
-        self.q=rsa.get_prime(512)
+        self.p=Rsa.get_prime(512)
+        self.q=Rsa.get_prime(512)
         self.n=self.p*self.q
         self.eular=(self.p-1)*(self.q-1)
-        x, y = rsa.calculate_equation(e,self.eular)
+        x, y = Rsa.calculate_equation(e,self.eular)
         self.d=x%self.eular
         self.aes=random.randrange(1<<127,2**128) # 128位的key，就是RSA要加密的对称session密钥，且二进制表示下末位要=1
         # print(self.aes)
@@ -98,6 +98,7 @@ for i in range(128,0,-1):
     print("current key: ",current_key)
     print("\n")
 
+print("The cracked session key is: ", current_key)
 decryptor=AES.new(a2b_hex(hex(current_key)[2:]),AES.MODE_ECB)
 plain_text=str(decryptor.decrypt(a2b_hex(his.request)),'utf-8') # 这行之所以不能在test函数中使用，是因为str一定要是ASCII码才行，如果test中有x5这样的就不能解释为ASCII码
 plain_text=plain_text.rstrip('\0')

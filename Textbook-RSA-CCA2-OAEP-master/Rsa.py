@@ -84,10 +84,55 @@ def calculate_equation(a, b): # 计算 ax-by=1 的正整数解
     return x, y
 
 
-def s2e(s):
-    e = [0,0,0,0,0,0,0,0]
-    for i in range(0,8,1):
-        e[i] = int(s%2)
-        s=s//2
-    e.reverse()
-    return e
+def get_random_n_d(size, e = 65537):
+    len1 = size // 2
+    len2 = size - len1
+    flag = 0
+    while True:
+        p = get_prime(len1)
+        q = get_prime(len2)
+        n = p * q
+        x = p * q
+        k = 0
+        while x != 0:
+            x = x >> 1
+            k = k + 1
+        if k > size and flag == 0:
+            len1 = len1 - 1
+            flag = 1
+        if k > size and flag == 1:
+            len2 = len2 - 1
+            flag = 0
+        if k == size:
+            break
+
+    phi = (p - 1) * (q - 1)
+    if get_gcd(e, phi) == 1:
+        x, y = calculate_equation(e, phi)
+        # print(x)
+        d = x % phi  # otherwise, x might be negative
+        # print(d)
+    return n, d
+
+def encode(n,e,m):
+    return pow(m, e, n)
+
+
+def decode1(n,d,c):
+    return pow(c, d, n)
+
+
+def decode2(p,q,dp,dq,qInv,c):
+    m1 = pow(c,dp,p)
+    m2 = pow(c,dq,q)
+    h = ((m1-m2) * qInv)%p
+    m = m2 + q*h
+    return m
+#
+# def s2e(s):
+#     e = [0,0,0,0,0,0,0,0]
+#     for i in range(0,8,1):
+#         e[i] = int(s%2)
+#         s=s//2
+#     e.reverse()
+#     return e
